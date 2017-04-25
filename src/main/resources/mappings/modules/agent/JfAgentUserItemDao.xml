@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.agent.dao.JfAgentUserItemDao">
+    
+	<sql id="jfAgentUserItemColumns">
+		a.user_id AS "userId",
+		a.item_id AS "itemId",
+		a.lines_count AS "linesCount",
+		a.lines_use AS "linesUse",
+		a.lines_not_use AS "linesNotUse",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		i.id AS "jfAgentItem.id",
+		i.name AS "jfAgentItem.name",
+		i.serial as "jfAgentItem.serial",
+		i.is_usable as "jfAgentItem.isUsable",
+		i.version_number AS  "jfAgentItem.versionNumber"
+	</sql>
+	
+	<sql id="jfAgentUserItemJoins">
+		JOIN jf_agent_item i ON a.item_id = i.id
+	</sql>
+    
+	<select id="get" resultType="JfAgentUserItem">
+		SELECT 
+			<include refid="jfAgentUserItemColumns"/>
+		FROM jf_agent_user_item a
+		<include refid="jfAgentUserItemJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="JfAgentUserItem">
+		SELECT 
+			<include refid="jfAgentUserItemColumns"/>
+		FROM jf_agent_user_item a
+		<include refid="jfAgentUserItemJoins"/>
+		<where>
+			<if test="userId != null and userId != ''">
+				AND a.user_id = #{userId}
+			</if>
+			<if test="itemId != null and itemId != ''">
+				AND a.item_id = #{itemId}
+			</if>
+		</where>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="JfAgentUserItem">
+		SELECT 
+			<include refid="jfAgentUserItemColumns"/>
+		FROM jf_agent_user_item a
+		<include refid="jfAgentUserItemJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO jf_agent_user_item(
+			user_id,
+			item_id,
+			lines_count,
+			lines_use,
+			lines_not_use,
+			create_by,
+			create_date,
+			update_by,
+			update_date
+		) VALUES (
+			#{user.id},
+			#{itemId},
+			#{linesCount},
+			#{linesUse},
+			#{linesNotUse},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE jf_agent_user_item SET 	
+			user_id = #{userId},
+			item_id = #{itemId},
+			lines_count = #{linesCount},
+			lines_use = #{linesUse},
+			lines_not_use = #{linesNotUse},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE user_id = #{userId} and item_id = #{itemId}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM jf_agent_user_item
+		WHERE user_id = #{id}
+	</update>
+
+
+	<!-- 插入用户和角色关联表数据 -->
+	<insert id="batchSave">
+		INSERT INTO jf_agent_user_item(
+			user_id,
+			item_id,
+			lines_count,
+			lines_use,
+			lines_not_use,
+			update_by,
+			update_date
+		)
+		<foreach collection="jfAgentUserItems" item="userItem" separator=" union all ">
+			SELECT #{id}, #{userItem.itemId}, #{userItem.linesCount},
+			#{userItem.linesUse},#{userItem.linesNotUse},
+			#{updateBy.id},
+			#{updateDate}
+			FROM dual
+		</foreach>
+	</insert>
+</mapper>

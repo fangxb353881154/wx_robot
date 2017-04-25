@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.agent.dao.JfAgentItemDao">
+    
+	<sql id="jfAgentItemColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.serial AS "serial",
+		a.is_usable AS "isUsable",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.version_number AS  "versionNumber",
+		a.code_Format AS "codeFormat",
+		a.code_format_prefix AS "codeFormatPrefix"
+	</sql>
+	
+	<sql id="jfAgentItemJoins">
+	</sql>
+    
+	<select id="get" resultType="JfAgentItem">
+		SELECT 
+			<include refid="jfAgentItemColumns"/>
+		FROM jf_agent_item a
+		<include refid="jfAgentItemJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="JfAgentItem">
+		SELECT 
+			<include refid="jfAgentItemColumns"/>
+		FROM jf_agent_item a
+		<include refid="jfAgentItemJoins"/>
+		<where>
+			
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if	test="serial != null and serial != ''" >
+				AND a.serial = #{serial}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="JfAgentItem">
+		SELECT
+            <if test="jfAgentUserItem.userId != null and jfAgentUserItem.userId !='' ">
+                i.user_id AS  "jfAgentUserItem.userId",
+                i.item_id AS "jfAgentUserItem.itemId",
+                i.lines_count AS  "jfAgentUserItem.linesCount",
+                i.lines_use AS "jfAgentUserItem.linesUse",
+                i.lines_not_use as "jfAgentUserItem.linesNotUse",
+            </if>
+			<include refid="jfAgentItemColumns"/>
+		FROM jf_agent_item a
+		<include refid="jfAgentItemJoins"/>
+        <if test="jfAgentUserItem.userId != null and jfAgentUserItem.userId !='' ">
+            LEFT JOIN jf_agent_user_item i ON i.item_id = a.id AND i.user_id = #{jfAgentUserItem.userId}
+        </if>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO jf_agent_item(
+			id,
+			name,
+			serial,
+			is_usable,
+			create_by,
+			create_date,
+			version_number,
+			code_Format,
+			code_format_prefix
+		) VALUES (
+			#{id},
+			#{name},
+			#{serial},
+			'1',
+			#{createBy.id},
+			#{createDate},
+			#{versionNumber},
+			#{codeFormat},
+			#{codeFormatPrefix}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE jf_agent_item SET 	
+			name = #{name},
+			serial = #{serial},
+			is_usable = #{isUsable},
+			version_number = #{versionNumber},
+			code_Format = #{codeFormat},
+			code_format_prefix = #{codeFormatPrefix}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM jf_agent_item
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

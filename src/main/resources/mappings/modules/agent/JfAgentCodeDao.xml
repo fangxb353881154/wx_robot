@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.agent.dao.JfAgentCodeDao">
+    
+	<sql id="jfAgentCodeColumns">
+		a.id AS "id",
+		a.credit_code AS "creditCode",
+		a.machine_code AS "machineCode",
+		a.agent_type AS "agentType",
+		a.is_useable AS "isUseable",
+		a.is_use AS "isUse",
+		a.user_id AS "user.id",
+		a.item_id AS "itemId",
+		a.user_code AS "userCode",
+		a.create_date AS "createDate",
+		a.author_date AS "authorDate",
+		a.valid_date AS "validDate",
+		a.lase_date AS "laseDate",
+		a.rank AS "rank",
+		a.code_type AS "codeType",
+		a.config AS "config",
+		u7.name AS "user.name"
+	</sql>
+	
+	<sql id="jfAgentCodeJoins">
+		LEFT JOIN sys_user u7 ON u7.id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="JfAgentCode">
+		SELECT 
+			<include refid="jfAgentCodeColumns"/>
+		FROM jf_agent_code a
+		<include refid="jfAgentCodeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="JfAgentCode">
+		SELECT 
+			<include refid="jfAgentCodeColumns"/>
+		FROM jf_agent_code a
+		<include refid="jfAgentCodeJoins"/>
+		<where>
+			<if test="creditCode != null and creditCode != ''">
+				AND a.credit_code = #{creditCode}
+			</if>
+			<if test="machineCode != null and machineCode != ''">
+				AND a.machine_code = #{machineCode}
+			</if>
+			<if test="isUse != null and isUse != ''">
+				AND a.is_use = #{isUse}
+			</if>
+			<if test="user.id != null and user.id != ''">
+				AND a.user_id = #{user.id}
+			</if>
+			<if test="itemId != null and itemId != ''">
+				AND a.item_id = #{itemId}
+			</if>
+			<if test="codeType != null and codeType != ''">
+				AND a.code_type = #{codeType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="JfAgentCode">
+		SELECT 
+			<include refid="jfAgentCodeColumns"/>
+		FROM jf_agent_code a
+		<include refid="jfAgentCodeJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO jf_agent_code(
+			id,
+			credit_code,
+			machine_code,
+			agent_type,
+			is_useable,
+			is_use,
+			user_id,
+			item_id,
+			user_code,
+			create_date,
+			author_date,
+			valid_date,
+			lase_date,
+			rank,
+			code_type
+		) VALUES (
+			#{id},
+			#{creditCode},
+			#{machineCode},
+			#{agentType},
+			'1',
+			'0',
+			#{user.id},
+			#{itemId},
+			#{userCode},
+			#{createDate},
+			#{authorDate},
+			#{validDate},
+			#{laseDate},
+			#{rank},
+			#{codeType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE jf_agent_code SET 	
+			credit_code = #{creditCode},
+			machine_code = #{machineCode},
+			is_useable = #{isUseable},
+			is_use = #{isUse},
+			user_id = #{user.id},
+			item_id = #{itemId},
+			user_code = #{userCode},
+			author_date = #{authorDate},
+			valid_date = #{validDate},
+			lase_date = #{laseDate},
+			rank = #{rank},
+			config = #{config},
+			code_type = #{codeType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM jf_agent_code
+		WHERE id = #{id}
+	</update>
+
+	<insert id="batchSave">
+		INSERT INTO jf_agent_code(
+			id,			credit_code,
+			agent_type,			is_useable,			is_use,
+			user_id,			item_id,
+			create_date,			valid_date,		rank,	code_type
+		)
+		<foreach collection="codeList" item="code" separator=" union all ">
+			SELECT #{code},			#{code},
+			#{agentType},			'1',			'0',
+			#{user.id},			#{itemId},
+			#{createDate},		#{validDate},	#{rank},	#{codeType}
+			FROM dual
+		</foreach>
+	</insert>
+
+	<select id="queryCodeGroupByType" resultType="com.thinkgem.jeesite.modules.agent.vo.AgentCodeTypeGroup">
+		select
+		code_type AS "codeType",
+		count(1) AS "codeCount",
+		sum(is_use)	AS "codeIsUse"
+		FROM jf_agent_code
+		WHERE item_id = #{itemId} AND user_id = #{user.id}
+			<if test="codeType != null and codeType != ''">
+				AND code_type = #{codeType}
+			</if>
+		GROUP BY code_type
+	</select>
+</mapper>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.red.dao.RedBagGrabLogDao">
+    
+	<sql id="redBagGrabLogColumns">
+		a.id AS "id",
+		a.creditcode AS "creditcode",
+		a.user_name AS "userName",
+		a.receive_name AS "receiveName",
+		a.receive_amount AS "receiveAmount",
+		a.avoid_amount AS "avoidAmount",
+		a.receive_num AS "receiveNum",
+		a.avoid_num AS "avoidNum",
+		a.create_date AS "createDate",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="redBagGrabLogJoins">
+	</sql>
+    
+	<select id="get" resultType="RedBagGrabLog">
+		SELECT 
+			<include refid="redBagGrabLogColumns"/>
+		FROM red_bag_grab_log a
+		<include refid="redBagGrabLogJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RedBagGrabLog">
+		SELECT 
+			<include refid="redBagGrabLogColumns"/>
+		FROM red_bag_grab_log a
+		<include refid="redBagGrabLogJoins"/>
+		<where>
+			
+			<if test="creditcode != null and creditcode != ''">
+				AND a.creditcode = #{creditcode}
+			</if>
+			<if test="userName != null and userName != ''">
+				AND a.user_name = #{userName}
+			</if>
+			<if test="receiveName != null and receiveName != ''">
+				AND a.receive_name = #{receiveName}
+			</if>
+			<if test="createDate != null and createDate != ''">
+				AND a.create_date &gt;= #{createDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RedBagGrabLog">
+		SELECT 
+			<include refid="redBagGrabLogColumns"/>
+		FROM red_bag_grab_log a
+		<include refid="redBagGrabLogJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO red_bag_grab_log(
+			id,
+			creditcode,
+			user_name,
+			receive_name,
+			receive_amount,
+			avoid_amount,
+			receive_num,
+			avoid_num,
+			create_date,
+			update_date
+		) VALUES (
+			#{id},
+			#{creditcode},
+			#{userName},
+			#{receiveName},
+			#{receiveAmount},
+			#{avoidAmount},
+			#{receiveNum},
+			#{avoidNum},
+			#{createDate},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE red_bag_grab_log SET 	
+			creditcode = #{creditcode},
+			user_name = #{userName},
+			receive_name = #{receiveName},
+			receive_amount = #{receiveAmount},
+			avoid_amount = #{avoidAmount},
+			receive_num = #{receiveNum},
+			avoid_num = #{avoidNum},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+	<update id="cumulativeSum">
+		UPDATE red_bag_grab_log SET
+			update_date = #{updateDate},
+			receive_amount = receive_amount + #{receiveAmount},
+			receive_num = receive_num + #{receiveNum},
+			avoid_amount = avoid_amount + #{avoidAmount},
+			avoid_num = avoid_num + #{avoidNum}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		DELETE FROM red_bag_grab_log
+		WHERE id = #{id}
+	</update>
+
+	<select id="querySendGroup" resultType="RedBagGrabLog">
+		SELECT
+		receive_name	AS  "receiveName",
+		sum(receive_Amount) as "receiveAmount",
+		sum(receive_num) AS "receiveNum",
+		sum(avoid_Amount) AS "avoidAmount",
+		sum(avoid_num) AS "avoidNum"
+		FROM red_bag_grab_log
+		WHERE
+			creditcode = #{creditcode}
+			<if test="startDate != null and startDate !=''">
+				AND create_date &gt;= #{startDate}
+			</if>
+			<if test="endDate != null and endDate !=''">
+				AND create_date &lt;= #{endDate}
+			</if>
+			<if test="avoidNum != null and avoidNum !=''">
+				AND avoid_num &gt;= #{avoidNum}
+			</if>
+		group by receive_name
+	</select>
+</mapper>

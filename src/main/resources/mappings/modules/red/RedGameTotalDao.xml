@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.red.dao.RedGameTotalDao">
+    
+	<sql id="redGameTotalColumns">
+		a.id AS "id",
+		a.credit_code AS "creditCode",
+		a.room_num AS "roomNum",
+		a.send_user_id AS "sendUserId",
+		a.send_user_nick AS "sendUserNick",
+		a.game_total AS "gameTotal"
+	</sql>
+	
+	<sql id="redGameTotalJoins">
+	</sql>
+    
+	<select id="get" resultType="RedGameTotal">
+		SELECT 
+			<include refid="redGameTotalColumns"/>
+		FROM red_game_total a
+		<include refid="redGameTotalJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RedGameTotal">
+		SELECT 
+			<include refid="redGameTotalColumns"/>
+		FROM red_game_total a
+		<include refid="redGameTotalJoins"/>
+		<where>
+			
+			<if test="creditCode != null and creditCode != ''">
+				AND a.credit_code = #{creditCode}
+			</if>
+			<if test="roomNum != null and roomNum != ''">
+				AND a.room_num = #{roomNum}
+			</if>
+			<if test="sendUserId != null and sendUserId != ''">
+				AND a.send_user_id = #{sendUserId}
+			</if>
+			<if test="sendUserNick != null and sendUserNick != ''">
+				AND a.send_user_nick = #{sendUserNick}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RedGameTotal">
+		SELECT 
+			<include refid="redGameTotalColumns"/>
+		FROM red_game_total a
+		<include refid="redGameTotalJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO red_game_total(
+			id,
+			credit_code,
+			room_num,
+			send_user_id,
+			send_user_nick,
+			game_total
+		) VALUES (
+			#{id},
+			#{creditCode},
+			#{roomNum},
+			#{sendUserId},
+			#{sendUserNick},
+			#{gameTotal}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE red_game_total SET 	
+			credit_code = #{creditCode},
+			room_num = #{roomNum},
+			send_user_id = #{sendUserId},
+			send_user_nick = #{sendUserNick},
+			game_total = #{gameTotal}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM red_game_total
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteByRoomNum">
+		DELETE FROM red_game_total
+		WHERE credit_code = #{creditCode} AND room_num = #{roomNum}
+	</update>
+</mapper>

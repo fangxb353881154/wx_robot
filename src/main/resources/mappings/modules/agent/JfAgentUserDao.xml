@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.agent.dao.JfAgentUserDao">
+    
+	<sql id="jfAgentUserColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.is_usable AS "isUsable",
+		a.use_hour AS "useHour",
+		u.id AS  "user.id",
+		u.login_Flag as "user.loginFlag",
+		u.login_name AS  "user.loginName"
+	</sql>
+	
+	<sql id="jfAgentUserJoins">
+		JOIN sys_user u on a.id = u.id
+	</sql>
+    
+	<select id="get" resultType="JfAgentUser">
+		SELECT 
+			<include refid="jfAgentUserColumns"/>
+		FROM jf_agent_user a
+		<include refid="jfAgentUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="JfAgentUser">
+		SELECT 
+			<include refid="jfAgentUserColumns"/>
+		FROM jf_agent_user a
+		<include refid="jfAgentUserJoins"/>
+		<where>
+			
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="JfAgentUser">
+		SELECT 
+			<include refid="jfAgentUserColumns"/>
+		FROM jf_agent_user a
+		<include refid="jfAgentUserJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO jf_agent_user(
+			id,
+			name,
+			is_usable,
+			use_hour
+		) VALUES (
+			#{id},
+			#{name},
+			'1',
+			#{useHour}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE jf_agent_user SET 	
+			name = #{name},
+			is_usable = #{isUsable},
+			use_hour = #{useHour}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM jf_agent_user
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.red.dao.RedBagSendLogDao">
+    
+	<sql id="redBagSendLogColumns">
+		a.id AS "id",
+		a.credit_code AS "creditCode",
+		a.room_num AS "roomNum",
+		a.send_user_id AS "sendUserId",
+		a.send_user_nick AS "sendUserNick",
+		a.total_amount AS "totalAmount",
+		a.total_num AS "totalNum",
+		a.wishing AS "wishing",
+		a.ray_value AS "rayValue",
+		a.ray_type AS "rayType",
+		a.create_date AS "createDate",
+		a.loss_ratio AS "lossRatio",
+		a.loss_ratio_amount_count AS "lossRatioAmountCount",
+		a.rward_amount_count AS "rwardAmountCount",
+		a.record AS "record",
+		a.lottery_Result AS  "lotteryResult"
+	</sql>
+	
+	<sql id="redBagSendLogJoins">
+	</sql>
+    
+	<select id="get" resultType="RedBagSendLog">
+		SELECT 
+			<include refid="redBagSendLogColumns"/>
+		FROM red_bag_send_log a
+		<include refid="redBagSendLogJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RedBagSendLog">
+		SELECT
+		<include refid="redBagSendLogColumns"/>
+		FROM red_bag_send_log a
+		<include refid="redBagSendLogJoins"/>
+		<where>
+
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="roomNum != null and roomNum !=''">
+				AND a.room_num = #{roomNum}
+			</if>
+			<if test="creditCode != null and creditCode != ''">
+				AND a.credit_code = #{creditCode}
+			</if>
+			<if test="sendUserId != null and sendUserId != ''">
+				AND a.send_user_id = #{sendUserId}
+			</if>
+			<if test="sendUserNick != null and sendUserNick != ''">
+				AND a.send_user_nick = #{sendUserNick}
+			</if>
+			<if test="rayValue != null and rayValue != ''">
+				AND a.ray_value = #{rayValue}
+			</if>
+			<if test="startDate != null and startDate !=''">
+				AND a.create_date &gt;= #{startDate}
+			</if>
+			<if test="endDate != null and endDate !=''">
+				AND a.create_date &lt;= #{endDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RedBagSendLog">
+		SELECT 
+			<include refid="redBagSendLogColumns"/>
+		FROM red_bag_send_log a
+		<include refid="redBagSendLogJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO red_bag_send_log(
+			id,
+			credit_code,
+			room_num,
+			send_user_id,
+			send_user_nick,
+			total_amount,
+			total_num,
+			wishing,
+			ray_value,
+			ray_type,
+			create_date,
+			loss_ratio,
+			loss_ratio_amount_count,
+			rward_amount_count,
+			record,
+			lottery_Result
+		) VALUES (
+			#{id},
+			#{creditCode},
+			#{roomNum},
+			#{sendUserId},
+			#{sendUserNick},
+			#{totalAmount},
+			#{totalNum},
+			#{wishing},
+			#{rayValue},
+			#{rayType},
+			#{createDate},
+			#{lossRatio},
+			#{lossRatioAmountCount},
+			#{rwardAmountCount},
+			#{record},
+			#{lotteryResult}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE red_bag_send_log SET 	
+			credit_code = #{creditCode},
+			send_user_id = #{sendUserId},
+			send_user_nick = #{sendUserNick},
+			total_amount = #{totalAmount},
+			total_num = #{totalNum},
+			wishing = #{wishing},
+			ray_value = #{rayValue},
+			ray_type = #{rayType},
+			loss_ratio = #{lossRatio},
+			loss_ratio_amount_count = #{lossRatioAmountCount},
+			rward_amount_count = #{rwardAmountCount},
+			record = #{record}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM red_bag_send_log
+		WHERE id = #{id}
+	</update>
+	<select id="querySendGroup" resultType="com.thinkgem.jeesite.modules.red.vo.RedBagSendGroupVo">
+		SELECT  count(1) 	AS  "sendNum",
+		sum(a.total_amount)	AS  "totalAmount",
+		a.send_user_nick		AS 	"sendUserNick",
+		sum(a.loss_ratio_amount_count)	AS "lossRatioAmountCount",
+		sum(a.rward_amount_count)		AS "rwardAmountCount"
+		FROM red_bag_send_log a
+		<where>
+			a.credit_code = #{creditCode} AND
+			a.room_num = #{roomNum}
+			<if test="sendUserId != null and sendUserId != ''">
+				AND a.send_user_id = #{sendUserId}
+			</if>
+			<if test="sendUserNick != null and sendUserNick != ''">
+				AND a.send_user_nick = #{sendUserNick}
+			</if>
+			<if test="startDate != null and startDate !=''">
+				AND a.create_date &gt;= #{startDate}
+			</if>
+			<if test="endDate != null and endDate !=''">
+				AND a.create_date &lt;= #{endDate}
+			</if>
+		</where>
+		group by send_user_nick
+	</select>
+
+	<update id="deleteByRoomNum">
+		DELETE FROM red_bag_send_log
+		WHERE credit_code = #{creditCode} AND room_num = #{roomNum}
+	</update>
+</mapper>
